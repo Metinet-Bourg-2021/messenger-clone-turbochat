@@ -5,6 +5,7 @@ const http = require("http");
 const server = http.createServer(app);
 const { Server } = require("socket.io");
 const mongoose = require("mongoose");
+const userController = require('./controllers/userController')
 
 const io = new Server(server, { cors: { origin: "*" } });
 
@@ -24,9 +25,7 @@ io.on("connection", (socket) => {
   //Penser a conserver le socket pour pouvoir s'en servir plus tard
   //Remplacer les callbacks par des fonctions dans d'autres fichiers.
 
-  socket.on("@authenticate", ({ username, password }, callback) => {
-    callback({ code: "SUCCESS", data: {} });
-  });
+  socket.on("@authenticate", userController.authenticate);
 
   socket.on("@getUsers", ({ token }, callback) => {
     callback({ code: "SUCCESS", data: {} });
