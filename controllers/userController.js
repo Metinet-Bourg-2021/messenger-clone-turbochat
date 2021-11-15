@@ -1,11 +1,11 @@
-const mongoose = require("mongoose");
 const User = require("../models/User");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const pictures = require("../pictures");
+const { checkAuth } = require("../auth/auth");
 
 async function authenticate({ username, password }, callback) {
-  User.findOne({ username: username }).then((user) => {
+  await User.findOne({ username: username }).then((user) => {
     if (user === null) {
       bcrypt.hash(password, 10).then((hash) => {
         const newUser = new User({
@@ -14,8 +14,8 @@ async function authenticate({ username, password }, callback) {
           picture_url: pictures.getRandomURL(),
         });
         const token = jwt.sign({ userId: newUser._id }, "secret_key", {
-            expiresIn: "1h",
-          });
+          expiresIn: "1h",
+        });
         newUser
           .save()
           .then((savedUser) =>
@@ -35,12 +35,12 @@ async function authenticate({ username, password }, callback) {
         .compare(password, user.password)
         .then((valid) => {
           if (!valid) {
-            console.log("sss")
+            console.log("sss");
             return callback({ code: "NOT_AUTHENTICATED", data: {} });
           }
           const token = jwt.sign({ userId: user._id }, "secret_key", {
-                expiresIn: "1h",
-              });
+            expiresIn: "1h",
+          });
           callback({
             code: "SUCCESS",
             data: {
@@ -48,7 +48,6 @@ async function authenticate({ username, password }, callback) {
               token: token,
               picture_url: user.picture_url,
             },
-            
           });
         })
         .catch((error) => console.log({ code: "NOT_AUTHENTICATED", error }));
@@ -56,6 +55,20 @@ async function authenticate({ username, password }, callback) {
   });
 }
 
+async function getUsers({ token }, callback) {
+  checkAuth(token, callback);
+  const users = await User.find();
+  const resp = users.map((user) => {
+    return {
+      username: user.username,
+      picture_url: user.picture_url,
+      awake: user.awake != null ? user.awake : false,
+    };
+  });
+  callback({ code: "SUCCESS", data: { users: resp } });
+}
+
 module.exports = {
   authenticate: authenticate,
+  getUsers: getUsers,
 };
