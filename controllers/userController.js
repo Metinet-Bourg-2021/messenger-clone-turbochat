@@ -65,6 +65,7 @@ async function getUsers({ token }, callback) {
       awake: user.awake != null ? user.awake : false,
     };
   });
+  console.log("USERS", resp);
   callback({ code: "SUCCESS", data: { users: resp } });
 }
 

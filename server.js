@@ -44,39 +44,37 @@ io.on("connection", (socket) => {
   );
   socket.on("@getConversations", conversationController.getConversations);
 
-  socket.on("@postMessage", ({ token, conversation_id, content }, callback) => {
-    callback({ code: "SUCCESS", data: {} });
-  });
-  socket.on(
-    "@seeConversation",
-    ({ token, conversation_id, message_id }, callback) => {
-      callback({ code: "SUCCESS", data: {} });
-    }
-  );
-  socket.on(
-    "@replyMessage",
-    ({ token, conversation_id, message_id, content }, callback) => {
-      callback({ code: "SUCCESS", data: {} });
-    }
-  );
-  socket.on(
-    "@editMessage",
-    ({ token, conversation_id, message_id, content }, callback) => {
-      callback({ code: "SUCCESS", data: {} });
-    }
-  );
-  socket.on(
-    "@reactMessage",
-    ({ token, conversation_id, message_id, reaction }) => {
-      callback({ code: "SUCCESS", data: {} });
-    }
-  );
-  socket.on(
-    "@deleteMessage",
-    ({ token, conversation_id, message_id, content }) => {
-      callback({ code: "SUCCESS", data: {} });
-    }
-  );
+  socket.on("@postMessage", conversationController.postMessage);
+  // socket.on(
+  //   "@seeConversation",
+  //   ({ token, conversation_id, message_id }, callback) => {
+  //     callback({ code: "SUCCESS", data: {} });
+  //   }
+  // );
+  // socket.on(
+  //   "@replyMessage",
+  //   ({ token, conversation_id, message_id, content }, callback) => {
+  //     callback({ code: "SUCCESS", data: {} });
+  //   }
+  // );
+  // socket.on(
+  //   "@editMessage",
+  //   ({ token, conversation_id, message_id, content }, callback) => {
+  //     callback({ code: "SUCCESS", data: {} });
+  //   }
+  // );
+  // socket.on(
+  //   "@reactMessage",
+  //   ({ token, conversation_id, message_id, reaction }) => {
+  //     callback({ code: "SUCCESS", data: {} });
+  //   }
+  // );
+  // socket.on(
+  //   "@deleteMessage",
+  //   ({ token, conversation_id, message_id, content }) => {
+  //     callback({ code: "SUCCESS", data: {} });
+  //   }
+  // );
 
   socket.on("disconnect", (reason) => {});
 

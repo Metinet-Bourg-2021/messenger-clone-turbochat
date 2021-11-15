@@ -1,40 +1,45 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-const messageSchema = mongoose.Schema({
-
+const messageSchema = mongoose.Schema(
+  {
+    id: {
+      type: Number,
+      required: true,
+    },
     from: {
-        type: String,
-        required: true
+      type: String,
+      required: true,
     },
     content: {
-        type: String,
-        required: true
+      type: String,
+      required: true,
     },
     posted_at: {
-        type: Date,
-        required: true
+      type: Date,
+      required: true,
     },
     delivered_to: {
-        type: Array,
-        required: true
+      type: Array,
+      required: true,
     },
     reply_to: {
-        type: String,
-        required: false
+      type: String,
+      required: false,
     },
     edited: {
-        type: Boolean,
-        required: false
+      type: Boolean,
+      required: false,
     },
     deleted: {
-        type: Boolean,
-        required: false,
+      type: Boolean,
+      required: false,
     },
     reactions: {
-        type: Object,
-        required: false
-    }
+      type: Object,
+      required: false,
+    },
+  },
+  { minimize: false }
+);
 
-}, { minimize: false });
-
-module.exports = mongoose.model('Message', messageSchema);
+module.exports = mongoose.model("Message", messageSchema);
