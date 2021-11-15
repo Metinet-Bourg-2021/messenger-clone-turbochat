@@ -4,6 +4,7 @@ const app = express();
 const http = require("http");
 const server = http.createServer(app);
 const { Server } = require("socket.io");
+const mongoose = require("mongoose");
 
 const io = new Server(server, { cors: { origin: "*" } });
 
@@ -11,7 +12,11 @@ app.get("/", (req, res) => {
   res.send("A utiliser pour du debug si vous avez besoin...");
 });
 
-server.listen(process.env.PORT, () => {
+mongoose.connect(process.env.DB_USER, { useNewUrlParser: true }, () =>
+  console.log("Connected to DB!")
+);
+
+server.listen(3000, () => {
   console.log("Server is listening");
 });
 
