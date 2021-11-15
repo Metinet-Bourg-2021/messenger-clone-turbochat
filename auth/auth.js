@@ -1,20 +1,20 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 
-function checkAuth(token, callback) {
+async function checkAuth(token, callback) {
   if (!token) {
-    return callback({ code: "NOT_AUTHENTICATED", data: {} });
+    callback({ code: "NOT_AUTHENTICATED", data: {} });
   }
   try {
     const decodedToken = jwt.verify(token, "secret_key");
-    const user = User.findById(decodedToken.userId);
+    const user = await User.findById(decodedToken.userId);
     if (!user) {
-      throw new error();
+      throw "error";
     } else {
-      return user._id;
+      return user.id;
     }
   } catch {
-    return callback({ code: "NOT_AUTHENTICATED", data: {} });
+    callback({ code: "NOT_AUTHENTICATED", data: {} });
   }
 }
 

@@ -3,12 +3,18 @@ const { checkAuth } = require("../auth/auth");
 const User = require("../models/User");
 
 async function getConversations({ token }, callback) {
-  checkAuth(token, callback);
-  const user = await User.findById(token.userId);
-  if (!user) {
-    callback({ code: "NOT_AUTHENTICATED", data: {} });
-  } else {
-    const conversations = Conversation.find().where();
+  const userId = await checkAuth(token, callback);
+  if (userId) {
+    const user = await User.findById(userId);
+    if (!user) {
+      callback({ code: "NOT_AUTHENTICATED", data: {} });
+    } else {
+      const conversations = await Conversation.find()
+        .where("participants")
+        .in(user.username);
+      console.log(conversations);
+      callback({ code: "SUCCESS", data: { conversations } });
+    }
   }
 }
 
