@@ -7,6 +7,7 @@ const { Server } = require("socket.io");
 const mongoose = require("mongoose");
 const userController = require("./controllers/userController");
 const conversationController = require("./controllers/conversationController");
+const messageController = require("./controllers/messageController");
 
 const io = new Server(server, { cors: { origin: "*" } });
 
@@ -30,53 +31,23 @@ io.on("connection", (socket) => {
 
   socket.on("@getUsers", userController.getUsers);
 
-  socket.on(
-    "@getOrCreateOneToOneConversation",
-    ({ token, username }, callback) => {
-      callback({ code: "SUCCESS", data: {} });
-    }
-  );
-  socket.on(
-    "@createManyToManyConversation",
-    ({ token, usernames }, callback) => {
-      callback({ code: "SUCCESS", data: {} });
-    }
-  );
+  socket.on("@getOrCreateOneToOneConversation", conversationController.getOrCreateOneToOneConversation);
+
+  socket.on("@createManyToManyConversation", conversationController.getOrCreateManyToManyConversation);
+
   socket.on("@getConversations", conversationController.getConversations);
 
-  socket.on("@postMessage", ({ token, conversation_id, content }, callback) => {
-    callback({ code: "SUCCESS", data: {} });
-  });
-  socket.on(
-    "@seeConversation",
-    ({ token, conversation_id, message_id }, callback) => {
-      callback({ code: "SUCCESS", data: {} });
-    }
-  );
-  socket.on(
-    "@replyMessage",
-    ({ token, conversation_id, message_id, content }, callback) => {
-      callback({ code: "SUCCESS", data: {} });
-    }
-  );
-  socket.on(
-    "@editMessage",
-    ({ token, conversation_id, message_id, content }, callback) => {
-      callback({ code: "SUCCESS", data: {} });
-    }
-  );
-  socket.on(
-    "@reactMessage",
-    ({ token, conversation_id, message_id, reaction }) => {
-      callback({ code: "SUCCESS", data: {} });
-    }
-  );
-  socket.on(
-    "@deleteMessage",
-    ({ token, conversation_id, message_id, content }) => {
-      callback({ code: "SUCCESS", data: {} });
-    }
-  );
+  socket.on("@postMessage", messageController.postMessage);
+
+  socket.on("@seeConversation", conversationController.seeConversation);
+  
+  socket.on("@replyMessage", messageController.replyMessage);
+
+  socket.on("@editMessage", messageController.editMessage);
+
+  socket.on("@reactMessage", messageController.reactMessage);
+
+  socket.on("@deleteMessage", messageController.deleteMessage);
 
   socket.on("disconnect", (reason) => {});
 

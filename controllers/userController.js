@@ -35,7 +35,6 @@ async function authenticate({ username, password }, callback) {
         .compare(password, user.password)
         .then((valid) => {
           if (!valid) {
-            console.log("sss");
             return callback({ code: "NOT_AUTHENTICATED", data: {} });
           }
           const token = jwt.sign({ userId: user._id }, "secret_key", {
@@ -56,15 +55,16 @@ async function authenticate({ username, password }, callback) {
 }
 
 async function getUsers({ token }, callback) {
-  checkAuth(token, callback);
+  const userId = await checkAuth(token, callback);
   const users = await User.find();
-  const resp = users.map((user) => {
+  const resp = users.filter((user) => user._id !== userId).map((user) => {
     return {
       username: user.username,
       picture_url: user.picture_url,
       awake: user.awake != null ? user.awake : false,
     };
   });
+
   callback({ code: "SUCCESS", data: { users: resp } });
 }
 

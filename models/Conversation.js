@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const AutoIncrement = require('mongoose-sequence')(mongoose);
 
 const conversationSchema = mongoose.Schema({
         type: {
@@ -26,13 +27,14 @@ const conversationSchema = mongoose.Schema({
             required: false
         },
         seen: {
-            type: Array,
+            type: Object,
             required: false
         },
         typing: {
-            type: Array,
+            type: Object,
             required: false
         }
 }, { minimize: false });
+conversationSchema.plugin(AutoIncrement, {inc_field: 'id'})
 
 module.exports = mongoose.model('Conversation', conversationSchema);
