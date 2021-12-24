@@ -8,6 +8,7 @@ const mongoose = require("mongoose");
 const userController = require("./controllers/userController");
 const conversationController = require("./controllers/conversationController");
 const messageController = require("./controllers/messageController");
+const CSocket = require("./models/UserSocket");
 
 const io = new Server(server, { cors: { origin: "*" } });
 
@@ -24,10 +25,10 @@ server.listen(3000, () => {
 });
 
 io.on("connection", (socket) => {
-  //Penser a conserver le socket pour pouvoir s'en servir plus tard
-  //Remplacer les callbacks par des fonctions dans d'autres fichiers.
 
-  socket.on("@authenticate", userController.authenticate);
+  socket.on("@authenticate", ({username, password}, callback) => {
+    userController.authenticate({username, password}, socket, callback)
+  });
 
   socket.on("@getUsers", userController.getUsers);
 
@@ -50,8 +51,5 @@ io.on("connection", (socket) => {
   socket.on("@deleteMessage", messageController.deleteMessage);
 
   socket.on("disconnect", (reason) => {});
-
-  //ceci est un test
+    CSocket.removeClient(socket.id);
 });
-
-// Addresse du serveur démo: wss://teach-vue-chat-server.glitch.me

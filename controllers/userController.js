@@ -3,8 +3,9 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const pictures = require("../pictures");
 const { checkAuth } = require("../auth/auth");
+const CSocket = require("../models/UserSocket");
 
-async function authenticate({ username, password }, callback) {
+async function authenticate({ username, password }, socket, callback) {
   await User.findOne({ username: username }).then((user) => {
     if (user === null) {
       bcrypt.hash(password, 10).then((hash) => {
@@ -18,16 +19,23 @@ async function authenticate({ username, password }, callback) {
         });
         newUser
           .save()
-          .then((savedUser) =>
-            callback({
-              code: "SUCCESS",
-              data: {
+          .then((savedUser) => {
+            callback({code: "SUCCESS", data: {
                 username: savedUser.username,
                 token: token,
                 picture_url: savedUser.picture_url,
               },
-            })
-          )
+            });
+
+            CSocket.addClient(savedUser.username, socket);
+
+            CSocket.emitAll("@userCreated", { user: {
+              username: savedUser.username,
+              password: null,
+              picture_url: savedUser.picture_url,
+              last_activity_at: new Date()
+            } })
+          })
           .catch((error) => callback({ code: "NOT_FOUND_USER", data: {} }));
       });
     } else {
@@ -35,11 +43,14 @@ async function authenticate({ username, password }, callback) {
         .compare(password, user.password)
         .then((valid) => {
           if (!valid) {
-            return callback({ code: "NOT_AUTHENTICATED", data: {} });
+            callback({ code: "NOT_AUTHENTICATED", data: {} });
           }
           const token = jwt.sign({ userId: user._id }, "secret_key", {
             expiresIn: "1h",
           });
+
+          CSocket.addClient(user.username, socket);
+
           callback({
             code: "SUCCESS",
             data: {
@@ -57,13 +68,15 @@ async function authenticate({ username, password }, callback) {
 async function getUsers({ token }, callback) {
   const userId = await checkAuth(token, callback);
   const users = await User.find();
-  const resp = users.filter((user) => user._id !== userId).map((user) => {
-    return {
-      username: user.username,
-      picture_url: user.picture_url,
-      awake: user.awake != null ? user.awake : false,
-    };
-  });
+  const resp = users
+    .filter((user) => user._id !== userId)
+    .map((user) => {
+      return {
+        username: user.username,
+        picture_url: user.picture_url,
+        awake: user.awake != null ? user.awake : false,
+      };
+    });
 
   callback({ code: "SUCCESS", data: { users: resp } });
 }

@@ -1,6 +1,7 @@
 const Conversation = require("../models/Conversation");
 const { checkAuth } = require("../auth/auth");
 const User = require("../models/User");
+const CSocket = require("../models/UserSocket");
 
 async function getConversations({ token }, callback) {
   const userId = await checkAuth(token, callback);
@@ -46,6 +47,10 @@ async function getOrCreateOneToOneConversation({ token, username }, callback) {
 
     conversation.save().then((conversation) => {
       callback({code: "SUCCESS", data: {conversation} });
+
+      console.log(conversation);
+
+      CSocket.emitAll('@conversationCreated', conversation)
     })
     
   }
@@ -86,6 +91,8 @@ async function getOrCreateManyToManyConversation(
 
     conversation.save().then((conversationSaved) => {
       callback({code: "SUCCESS", data: {conversationSaved} });
+
+      CSocket.emitAll('@conversationCreated', conversationSaved)
     })
   }
 }
@@ -107,7 +114,13 @@ async function seeConversation({ token, conversation_id, message_id, content }, 
     let seenObject = conversation.seen;
     seenObject[user.username] = { message_id, time: new Date()};
 
-    await Conversation.updateOne({id: conversation_id}, {$set: { seen: seenObject }})
+    await Conversation.updateOne({id: conversation_id}, {$set: { seen: seenObject }});
+
+    let saved = conversation;
+    saved.seen = seenObject;
+
+    CSocket.emitEvent('@conversationSeen', conversation.participants, saved);
+      
       callback({code: "SUCCESS", data: {} });
   }
 

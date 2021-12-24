@@ -2,6 +2,7 @@ const Logger = require("nodemon/lib/utils/log");
 const { checkAuth } = require("../auth/auth");
 const Conversation = require("../models/Conversation");
 const User = require("../models/User");
+const CSocket = require("../models/UserSocket");
 
 async function postMessage({ token, conversation_id, content }, callback) {
   const userId = await checkAuth(token, callback);
@@ -29,6 +30,11 @@ async function postMessage({ token, conversation_id, content }, callback) {
 
     conversation.save().then(() => {
       callback({ code: "SUCCESS", data: { message } });
+
+      CSocket.emitEvent('@messagePosted', conversation.participants, {
+        conversation_id,
+        message
+      })
     });
   }
 }
@@ -87,10 +93,17 @@ async function editMessage(
 
       messagesArray.find((m) => m.id === message_id).content = content;
 
+      let messageEdited = messagesArray.find(m => m.id === message_id);
+
       await Conversation.updateOne(
         { id: conversation_id },
         { $set: { messages: messagesArray } }
       );
+
+      CSocket.emitEvent('@messageEdited', conversation.participants, {
+        conversation_id,
+        message: messageEdited
+      })
 
       return callback({ code: "SUCCESS", data: {} });
     } else {
@@ -116,8 +129,15 @@ async function reactMessage({token, conversation_id, message_id, reaction}, call
     let messagesArray = conversation.messages;
     messagesArray.find(m => m.id === message_id).reactions[user.username] = reaction;
 
+    let messageReacted = messagesArray.find(m => m.id === message_id);
+
     await Conversation.updateOne({id: conversation_id}, {$set : { messages: messagesArray}});
     callback({code: "SUCCESS", data: {}});
+
+    CSocket.emitEvent('@messageReacted', conversation.participants, {
+      conversation_id,
+      message: messageReacted
+    })
     
   }
 
@@ -138,6 +158,12 @@ async function deleteMessage({token, conversation_id, message_id, content}, call
     messageDeleted.content = "";
 
     await Conversation.updateOne({id: conversation_id}, {$set : {messages: messagesArray }});
+
+    CSocket.emitEvent('@mesageDeleted', conversation.participants, {
+      conversation_id,
+      message: messageDeleted
+    })
+
     callback({code: "SUCCESS", data: {}});
   }
 }
